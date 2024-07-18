@@ -17,12 +17,20 @@ IMAGE imgBar;
 IMAGE imgCards[plantCount];
 IMAGE* imgPlant[plantCount][20];
 
-int curX, curY;	//当前选中的植物，在移动过程中的位置
-int curPlant;	//0：没有选中  1：选择第一种植物
+int curX, curY;	
+int curPlant;	
 
-bool fileExist(const char* name)	//判断文件是否存在
+typedef struct Plant
 {
-	FILE* fp = fopen(name,"r");		//若文件为空则返回NULL
+	int type;			//0:没有植物	1：第一种植物 
+	int frameIndex;		//序列帧的序号
+}Plant;
+
+Plant map[3][9];	//植物种植的二维数组
+
+bool fileExist(const char* name)
+{
+	FILE* fp = fopen(name,"r");
 	if (fp)
 	{
 		fclose(fp);
@@ -34,23 +42,19 @@ void gameInit()
 { 
 	loadimage(&imgBg, "res/bg.jpg");
 	loadimage(&imgBar, "res/bar5.png");
-
 	memset(imgPlant, 0, sizeof(imgPlant));
-
+	memset(map, 0, sizeof(map));	//初始化map为0
 	char name[64];
 	for (int i = 0; i < plantCount; i++)
 	{
 		sprintf_s(name, sizeof(name), "res/Cards/card_%d.png", i + 1);
 		loadimage(&imgCards[i], name);
-
-		//生成植物每帧的图片
 		for (int j = 0; j < 20; j++)
 		{
 			sprintf_s(name, sizeof(name), "res/zhiwu/%d/%d.png", i, j + 1);
-			//先判断这个文件是否存在
 			if (fileExist(name))
 			{
-				imgPlant[i][j] = new IMAGE;	//C++
+				imgPlant[i][j] = new IMAGE;
 				loadimage(imgPlant[i][j], name);
 			}
 			else
@@ -64,7 +68,7 @@ void gameInit()
 
 void updateWindow()
 {
-	BeginBatchDraw();	//开始缓冲
+	BeginBatchDraw();
 	putimage(0, 0, &imgBg);
 	putimagePNG(250, 0, &imgBar);
 	for (int i = 0; i < plantCount; i++)
@@ -73,15 +77,26 @@ void updateWindow()
 		int y = 6;
 		putimagePNG(x, y, &imgCards[i]);
 	}
-
-	//渲染拖动过程中的植物
 	if (curPlant)
 	{
 		IMAGE* img = imgPlant[curPlant - 1][0];
-		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);	//这里用到了C++的类
+		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);
 	}
-
-	EndBatchDraw();	//结束双缓冲
+	for (int i = 0; i < 3;i++)
+	{
+		for (int j = 0; j < 9; j++)
+		{
+			if (map[i][j].type > 0)
+			{
+				int x = 256 + j * 81;
+				int y = 194 + i * 102;
+				int PlantType = map[i][j].type - 1;
+				int index = map[i][j].frameIndex;
+				putimagePNG(x, y, imgPlant[PlantType][index]);
+			}
+		}
+	}
+	EndBatchDraw();
 }
 
 void userClick()
@@ -106,7 +121,18 @@ void userClick()
 		}
 		else if (msg.message == WM_LBUTTONUP)
 		{
-
+			if (msg.x > 256 && msg.y < 489 && msg.y>179)
+			{
+				int row = (msg.y - 179) / 102;
+				int col = (msg.x - 256) / 81;
+				if (map[row][col].type == 0)
+				{
+					map[row][col].type = curPlant;
+					map[row][col].frameIndex = 0;
+				}
+			}
+			curPlant = 0;
+			status = 0;
 		}
 	}
 }
