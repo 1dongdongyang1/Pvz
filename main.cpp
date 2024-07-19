@@ -77,11 +77,6 @@ void updateWindow()
 		int y = 6;
 		putimagePNG(x, y, &imgCards[i]);
 	}
-	if (curPlant)
-	{
-		IMAGE* img = imgPlant[curPlant - 1][0];
-		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);
-	}
 	for (int i = 0; i < 3;i++)
 	{
 		for (int j = 0; j < 9; j++)
@@ -95,6 +90,11 @@ void updateWindow()
 				putimagePNG(x, y, imgPlant[PlantType][index]);
 			}
 		}
+	}
+	if (curPlant)
+	{
+		IMAGE* img = imgPlant[curPlant - 1][0];
+		putimagePNG(curX - img->getwidth() / 2, curY - img->getheight() / 2, img);
 	}
 	EndBatchDraw();
 }
@@ -137,7 +137,7 @@ void userClick()
 	}
 }
 
-void updateGame()	//游戏更新
+void updateGame()	
 {
 	for (int i = 0; i < 3; i++)
 	{
@@ -160,11 +160,23 @@ void updateGame()	//游戏更新
 int main(void)
 {
 	gameInit();
+	int timer = 0;
+	bool flag = true;
 	while (1)
 	{
 		userClick();
 		updateWindow();
-		updateGame();
+		timer += getDelay();	//tool.cpp里的函数
+		if (timer > 40)
+		{
+			flag = true;
+			timer = 0;
+		}
+		if (flag)
+		{
+			flag = false;
+			updateGame();
+		}
 	}
 	return 0;
 }
