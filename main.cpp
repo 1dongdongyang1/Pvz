@@ -22,11 +22,11 @@ int curPlant;
 
 typedef struct Plant
 {
-	int type;			//0:没有植物	1：第一种植物 
-	int frameIndex;		//序列帧的序号
+	int type;			
+	int frameIndex;		
 }Plant;
 
-Plant map[3][9];	//植物种植的二维数组
+Plant map[3][9];	
 
 bool fileExist(const char* name)
 {
@@ -43,7 +43,7 @@ void gameInit()
 	loadimage(&imgBg, "res/bg.jpg");
 	loadimage(&imgBar, "res/bar5.png");
 	memset(imgPlant, 0, sizeof(imgPlant));
-	memset(map, 0, sizeof(map));	//初始化map为0
+	memset(map, 0, sizeof(map));	
 	char name[64];
 	for (int i = 0; i < plantCount; i++)
 	{
@@ -137,6 +137,26 @@ void userClick()
 	}
 }
 
+void updateGame()	//游戏更新
+{
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = 0; j < 9; j++)
+		{
+			if (map[i][j].type > 0)
+			{
+				map[i][j].frameIndex++;
+				int PlantType = map[i][j].type - 1;
+				int index = map[i][j].frameIndex;
+				if (imgPlant[PlantType][index] == NULL)
+				{
+					map[i][j].frameIndex = 0;
+				}
+			}
+		}
+	}
+}
+
 int main(void)
 {
 	gameInit();
@@ -144,7 +164,7 @@ int main(void)
 	{
 		userClick();
 		updateWindow();
-
+		updateGame();
 	}
 	return 0;
 }
